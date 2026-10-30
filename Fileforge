@@ -1,0 +1,43 @@
+menu-driven Python application to organize, manage and track information with persistent storage (JSON). Run: python fileforge.py """
+
+import json
+import os
+from datetime import datetime
+
+DATA_FILE = "fileforge_data.json"
+
+
+# ---------------------------------------------------------------- storage
+def load_records(path=DATA_FILE):
+    """Load records from disk. Returns an empty list if no file exists."""
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        print("Warning: data file unreadable. Starting with an empty list.")
+        return []
+
+
+def save_records(records, path=DATA_FILE):
+    """Write all records to disk."""
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(records, f, indent=2, ensure_ascii=False)
+
+
+def next_id(records):
+    return max((r["id"] for r in records), default=0) + 1
+
+
+# ---------------------------------------------------------------- helpers
+def ask(prompt, required=True, default=None):
+    """Prompt for text. Re-asks if required and empty."""
+    while True:
+        suffix = f" [{default}]" if default else ""
+        value = input(f"{prompt}{suffix}: ").strip()
+        if not value and default is not None:
+            return default
+        if value or not required:
+            return value
+        print(" This field cannot be empty.")
